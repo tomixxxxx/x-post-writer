@@ -70,16 +70,35 @@
 
         <!-- LEFT SIDEBAR: Talks List -->
         <aside class="sidebar sidebar-left" id="sidebar-left">
-            <button class="btn btn-new-talk" id="new-talk-btn" onclick="createNewTalk()">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>新規ポスト作成</span>
-            </button>
-            <div class="talks-list" id="talks-list">
-                <!-- Talk items rendered dynamically -->
+            <div style="display: flex; flex-direction: column; height: 100%;">
+                <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                    <button class="btn btn-new-talk" id="new-talk-btn" onclick="createNewTalk()">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>新規ポスト作成</span>
+                    </button>
+                    <div class="talks-list" id="talks-list" style="flex: 1; overflow-y: auto;">
+                        <!-- Talk items rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- Settings Button (Fixed at bottom) -->
+                <div style="padding: 16px; border-top: 1px solid var(--border-subtle); background: var(--bg-sidebar);">
+                    <button class="btn btn-secondary" id="settings-btn" onclick="openSettings()"
+                        style="width: 100%; justify-content: flex-start; gap: 12px; font-weight: 500;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg>
+                        <span>設定・カスタマイズ</span>
+                    </button>
+                </div>
             </div>
         </aside>
 
