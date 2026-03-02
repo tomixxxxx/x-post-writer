@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X Post Writer — AIでポスト案を作成</title>
+    <meta name="description" content="日常の出来事から、あなたらしいXのポスト案をAIが自動生成。選んで、手直しして、そのまま投稿。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Gemini SDK via ESM (CDN) -->
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+    </script>
+</head>
+
+<body>
+    <!-- ── Header ───────────────────────────────────── -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <img src="logo.png" alt="X Post Writer Logo" width="32" height="32" style="border-radius: 8px;">
+                <svg class="logo-text-svg" viewBox="0 0 150 32" width="150" height="32">
+                    <text x="0" y="24" class="logo-text">Post Writer</text>
+                </svg>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="header-tag">Powered by Gemini</span>
+            <button class="btn-icon" id="settings-btn" onclick="openSettings()" title="APIキー設定">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+            </button>
+            <!-- Mobile sidebar toggle -->
+            <button class="btn-icon mobile-menu-btn" id="menu-btn" onclick="toggleMobileMenu()" title="メニュー">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ── App Layout (3-Column) ───────────────────── -->
+    <div class="app-layout">
+
+        <!-- LEFT SIDEBAR: Talks List -->
+        <aside class="sidebar sidebar-left" id="sidebar-left">
+            <button class="btn btn-new-talk" id="new-talk-btn" onclick="createNewTalk()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>新規ポスト作成</span>
+            </button>
+            <div class="talks-list" id="talks-list">
+                <!-- Talk items rendered dynamically -->
+            </div>
+        </aside>
+
+        <!-- Sidebar overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
+        <!-- CENTER: Main Content -->
+        <main class="main-content" id="main-content">
+            <!-- Empty state (no talk selected) -->
+            <div class="empty-state" id="empty-state">
+                <div class="empty-state-icon">✨</div>
+                <h2>新しいポストを作ろう</h2>
+                <p>左の「新規ポスト作成」ボタンから始めよう！</p>
+            </div>
+
+            <!-- Talk view (visible when a talk is active) -->
+            <div class="talk-view hidden" id="talk-view">
+                <!-- Step 1: Input -->
+                <section class="section section-input" id="input-section">
+                    <div class="section-header">
+                        <span class="step-badge">1</span>
+                        <h2>今日あった出来事を教えて</h2>
+                    </div>
+                    <p class="section-desc">日常の出来事をざっくり書いてね。AIが「ハレ」らしいポスト案に仕上げるよ。</p>
+
+                    <div class="model-selection">
+                        <label>モデル:</label>
+                        <div class="custom-select" id="custom-model-select">
+                            <div class="select-trigger" onclick="toggleModelDropdown(event)">
+                                <span class="model-badge" id="selected-model-icon"
+                                    style="color: #ffd400; background: rgba(255, 212, 0, 0.1);">⚡</span>
+                                <span class="model-name" id="selected-model-name">Gemini 3 Flash</span>
+                                <span class="select-arrow">▼</span>
+                            </div>
+                            <ul class="select-options" id="model-options">
+                                <li class="select-option" data-value="gemini-3.1-pro" data-name="Gemini 3.1 Pro"
+                                    data-icon="🧠" data-color="#c840e9" onclick="selectModelOption(this)">
+                                    <span class="model-badge"
+                                        style="color: #c840e9; background: rgba(200, 64, 233, 0.1);">🧠</span>
+                                    <div class="model-info">
+                                        <span class="model-name">Gemini 3.1 Pro</span>
+                                        <span class="model-desc">複雑な推論特化</span>
+                                    </div>
+                                </li>
+                                <li class="select-option selected" data-value="gemini-3-flash"
+                                    data-name="Gemini 3 Flash" data-icon="⚡" data-color="#ffd400"
+                                    onclick="selectModelOption(this)">
+                                    <span class="model-badge"
+                                        style="color: #ffd400; background: rgba(255, 212, 0, 0.1);">⚡</span>
+                                    <div class="model-info">
+                                        <span class="model-name">Gemini 3 Flash</span>
+                                        <span class="model-desc">爆速・低コストの次世代標準</span>
+                                    </div>
+                                </li>
+                                <li class="select-option" data-value="gemini-2.5-flash" data-name="Gemini 2.5 Flash"
+                                    data-icon="🚀" data-color="#1d9bf0" onclick="selectModelOption(this)">
+                                    <span class="model-badge"
+                                        style="color: #1d9bf0; background: rgba(29, 155, 240, 0.1);">🚀</span>
+                                    <div class="model-info">
+                                        <span class="model-name">Gemini 2.5 Flash</span>
+                                        <span class="model-desc">高速な現行標準モデル</span>
+                                    </div>
+                                </li>
+                                <li class="select-option" data-value="gemini-2.5-flash-lite"
+                                    data-name="Gemini 2.5 Flash Lite" data-icon="🍃" data-color="#00ba7c"
+                                    onclick="selectModelOption(this)">
+                                    <span class="model-badge"
+                                        style="color: #00ba7c; background: rgba(0, 186, 124, 0.1);">🍃</span>
+                                    <div class="model-info">
+                                        <span class="model-name">Gemini 2.5 Flash Lite</span>
+                                        <span class="model-desc">軽量で安価なモデル</span>
+                                    </div>
+                                </li>
+                            </ul>
+                            <!-- Hidden input matching old select id to minimize JS changes -->
+                            <input type="hidden" id="model-select" value="gemini-3-flash">
+                        </div>
+                    </div>
+
+                    <div class="input-area">
+                        <textarea id="event-input" placeholder="例: 息子が初めて「パパ」と言ったけど、冷蔵庫に向かって言ってた" rows="3"></textarea>
+                        <button id="generate-btn" class="btn btn-primary" onclick="generateDrafts()">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                <path d="M2 17l10 5 10-5" />
+                                <path d="M2 12l10 5 10-5" />
+                            </svg>
+                            <span>ポスト案を生成</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Step 2: Drafts -->
+                <section class="section section-drafts hidden" id="drafts-section">
+                    <div class="section-header">
+                        <span class="step-badge">2</span>
+                        <h2>ポスト案を選んで</h2>
+                    </div>
+                    <p class="section-desc">気に入った案は ❤️ でいいね！しっくりくるものをクリックして推敲しよう。</p>
+
+                    <!-- Loading -->
+                    <div class="loading" id="loading">
+                        <div class="loading-spinner"></div>
+                        <p>AIが考え中…</p>
+                    </div>
+
+                    <!-- Draft cards -->
+                    <div class="drafts-grid" id="drafts-grid"></div>
+
+                    <button class="btn btn-secondary" id="regenerate-btn" onclick="generateDrafts()"
+                        style="display:none;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10" />
+                            <polyline points="1 20 1 14 7 14" />
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                        </svg>
+                        <span>さらに5案を生成</span>
+                    </button>
+                </section>
+
+                <!-- Step 3: Edit & Post -->
+                <section class="section section-edit hidden" id="edit-section">
+                    <div class="section-header">
+                        <span class="step-badge">3</span>
+                        <h2>手直しして投稿</h2>
+                    </div>
+                    <p class="section-desc">微調整してから投稿ボタンを押そう。Xの投稿画面が開きます。</p>
+                    <div class="edit-area">
+                        <textarea id="edit-input" rows="4" maxlength="280"></textarea>
+                        <div class="edit-footer">
+                            <div class="char-counter">
+                                <span id="char-count">0</span> / 140
+                                <div class="char-bar">
+                                    <div class="char-bar-fill" id="char-bar-fill"></div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                <button id="save-edit-btn" class="btn btn-secondary" onclick="saveEditedDraft()">
+                                    <span>手直しした案として保存</span>
+                                </button>
+                                <button id="post-btn" class="btn btn-post" onclick="postToX()">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                        <path
+                                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                                    </svg>
+                                    <span>Xに投稿する</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- RIGHT SIDEBAR: Liked Drafts -->
+        <aside class="sidebar sidebar-right" id="sidebar-right">
+            <div class="sidebar-title">
+                <span class="sidebar-title-icon">❤️</span>
+                <h3>いいね一覧</h3>
+            </div>
+            <div class="liked-list" id="liked-list">
+                <div class="liked-empty" id="liked-empty">気に入ったポスト案に❤️しよう</div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ── API Key Settings Modal ───────────────── -->
+    <div class="modal-overlay" id="settings-modal" onclick="closeSettingsOnOverlay(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>⚙️ APIキー設定</h2>
+                <button class="modal-close" onclick="closeSettings()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">
+                    Google AI Studio で取得した Gemini API キーを入力してください。<br>
+                    キーはこのブラウザの <code>localStorage</code> に保存されます。
+                </p>
+                <div class="api-key-input-group">
+                    <input type="password" id="api-key-input" placeholder="AIza..." autocomplete="off">
+                    <button class="btn-icon" id="toggle-key-visibility" onclick="toggleKeyVisibility()" title="表示切替">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-actions">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link-btn">🔑 APIキーを取得</a>
+                    <button class="btn btn-primary" onclick="saveApiKeyFromModal()">保存する</button>
+                </div>
+                <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 4px;">
+                    <button class="btn btn-secondary" style="width:100%;"
+                        onclick="closeSettings(); openPersonaEditor()">
+                        📝 ペルソナ（文体設定）を編集
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Persona Editor Modal ─────────────────── -->
+    <div class="modal-overlay" id="persona-modal" onclick="closePersonaOnOverlay(event)">
+        <div class="modal modal-wide">
+            <div class="modal-header">
+                <h2>📝 ペルソナ設定</h2>
+                <button class="modal-close" onclick="closePersonaEditor()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">
+                    AIがポスト案を生成する際のペルソナ（文体・キャラクター設定）を編集します。<br>
+                    変更はこのブラウザの <code>localStorage</code> に保存されます。
+                </p>
+                <textarea id="persona-textarea" rows="14" placeholder="# ペルソナ設定..."></textarea>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="resetPersonaToDefault()">🔄 ファイルの内容に戻す</button>
+                    <button class="btn btn-primary" onclick="savePersonaFromModal()">保存する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Talk Delete Confirm Modal ───────────── -->
+    <div class="modal-overlay" id="delete-talk-modal" onclick="cancelDeleteTalkOverlay(event)">
+        <div class="modal modal-compact">
+            <div class="modal-header">
+                <h2>🗑️ トークを削除</h2>
+                <button class="modal-close" onclick="cancelDeleteTalk()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc" id="delete-talk-message">このトークを削除しますか？<br>この操作は取り消せません。</p>
+                <div class="modal-actions" style="justify-content: flex-end;">
+                    <button class="btn btn-secondary" onclick="cancelDeleteTalk()">キャンセル</button>
+                    <button class="btn" style="background:var(--error);color:#fff;"
+                        onclick="confirmDeleteTalk()">削除する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Toast notification ───────────────────────── -->
+    <div id="toast" class="toast"></div>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>
