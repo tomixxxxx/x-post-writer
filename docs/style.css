@@ -1030,26 +1030,6 @@ textarea:focus {
 }
 
 /* ── Responsive ────────────────────────────────── */
-@media (max-width: 1024px) {
-    .app-layout {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto;
-    }
-
-    .sidebar-left {
-        display: none;
-    }
-
-    .sidebar-right {
-        border-left: none;
-        border-top: 1px solid var(--border-subtle);
-        max-height: 250px;
-    }
-
-    .main-content {
-        padding: 24px 20px;
-    }
-}
 
 /* ── Scrollbar ─────────────────────────────────── */
 ::-webkit-scrollbar {
@@ -1095,6 +1075,10 @@ textarea:focus {
 }
 
 .mobile-likes-btn {
+    display: none;
+}
+
+.mobile-settings-wrapper {
     display: none;
 }
 
@@ -1260,6 +1244,14 @@ textarea:focus {
 
     .mobile-likes-btn {
         display: flex;
+    }
+
+    .mobile-settings-wrapper {
+        display: block;
+    }
+
+    .desktop-settings-btn {
+        display: none;
     }
 
     .header-tag {

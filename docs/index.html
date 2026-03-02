@@ -44,7 +44,8 @@
                     </path>
                 </svg>
             </button>
-            <button class="btn-icon" id="settings-btn" onclick="openSettings()" title="APIキー設定">
+            <button class="btn-icon desktop-settings-btn" id="settings-btn-desktop" onclick="openSettings()"
+                title="APIキー設定">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -85,9 +86,10 @@
                     </div>
                 </div>
 
-                <!-- Settings Button (Fixed at bottom) -->
-                <div style="padding: 16px; border-top: 1px solid var(--border-subtle); background: var(--bg-sidebar);">
-                    <button class="btn btn-secondary" id="settings-btn" onclick="openSettings()"
+                <!-- Settings Button (Fixed at bottom, mobile only) -->
+                <div class="mobile-settings-wrapper"
+                    style="padding: 16px; border-top: 1px solid var(--border-subtle); background: var(--bg-sidebar);">
+                    <button class="btn btn-secondary" id="settings-btn-mobile" onclick="openSettings()"
                         style="width: 100%; justify-content: flex-start; gap: 12px; font-weight: 500;">
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
