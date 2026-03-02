@@ -388,7 +388,9 @@ function switchToTalk(talkId) {
     emptyState.classList.add('hidden');
 
     // Close mobile menu
-    window.closeMobileMenu();
+    if (typeof window.closeAllMobileMenus === 'function') {
+        window.closeAllMobileMenus();
+    }
 
     // Restore event
     eventInput.value = talk.event || '';
