@@ -256,13 +256,27 @@ window.confirmDeleteTalk = function () {
 // ── Mobile Sidebar ─────────────────────────────────
 window.toggleMobileMenu = function () {
     const sidebar = document.getElementById('sidebar-left');
+    const rightSidebar = document.getElementById('sidebar-right');
     const overlay = document.getElementById('sidebar-overlay');
+    if (rightSidebar.classList.contains('open')) rightSidebar.classList.remove('open');
     sidebar.classList.toggle('open');
-    overlay.classList.toggle('open');
+    if (sidebar.classList.contains('open')) overlay.classList.add('open');
+    else overlay.classList.remove('open');
 };
 
-window.closeMobileMenu = function () {
+window.toggleLikesMenu = function () {
+    const sidebar = document.getElementById('sidebar-right');
+    const leftSidebar = document.getElementById('sidebar-left');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (leftSidebar.classList.contains('open')) leftSidebar.classList.remove('open');
+    sidebar.classList.toggle('open');
+    if (sidebar.classList.contains('open')) overlay.classList.add('open');
+    else overlay.classList.remove('open');
+};
+
+window.closeAllMobileMenus = function () {
     document.getElementById('sidebar-left').classList.remove('open');
+    document.getElementById('sidebar-right').classList.remove('open');
     document.getElementById('sidebar-overlay').classList.remove('open');
 };
 
