@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 
 // ── Middleware ──────────────────────────────────────────
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'docs')));
 
 // ── Load persona prompt ────────────────────────────────
 const personaPrompt = fs.readFileSync(
