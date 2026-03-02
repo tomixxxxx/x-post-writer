@@ -262,7 +262,30 @@
                     </button>
                 </div>
 
-                <div class="modal-actions">
+                <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 8px;">
+                    <p class="modal-desc" style="margin-bottom: 8px;">
+                        生成されるポスト案の表示を変更できます。<br>
+                        （画像はこのブラウザ内にのみ保存されます）
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <input type="text" id="user-name-input" placeholder="表示名 (例: デフォルトくん)"
+                            style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 14px; color: var(--text-primary); font-family: var(--font-sans); font-size: 0.9rem;">
+                        <input type="text" id="user-handle-input" placeholder="ユーザーID (例: @default)"
+                            style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 14px; color: var(--text-primary); font-family: var(--font-sans); font-size: 0.9rem;">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <img id="avatar-preview" src=""
+                                style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: none; background: var(--bg-card);">
+                            <label for="avatar-upload" class="btn btn-secondary"
+                                style="flex: 1; text-align: center; cursor: pointer; padding: 10px;">
+                                📷 アイコン画像を選択
+                            </label>
+                            <input type="file" id="avatar-upload" accept="image/png, image/jpeg, image/gif"
+                                style="display: none;" onchange="handleAvatarUpload(event)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 8px;">
                     <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link-btn">🔑 APIキーを取得</a>
                     <button class="btn btn-primary" onclick="saveApiKeyFromModal()">保存する</button>
                 </div>

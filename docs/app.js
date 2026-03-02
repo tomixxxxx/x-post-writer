@@ -54,9 +54,28 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── API Key Management ─────────────────────────────
 const API_KEY_STORAGE_KEY = 'xpostwriter_gemini_api_key';
 const PERSONA_STORAGE_KEY = 'xpostwriter_persona_prompt';
+const USER_NAME_STORAGE_KEY = 'xpostwriter_user_name';
+const USER_HANDLE_STORAGE_KEY = 'xpostwriter_user_handle';
+const USER_AVATAR_STORAGE_KEY = 'xpostwriter_user_avatar';
+
+const DEFAULT_USER_NAME = 'デフォルトくん';
+const DEFAULT_USER_HANDLE = '@default';
+const DEFAULT_AVATAR_PLACEHOLDER = 'avatar.png';
 
 function loadApiKey() {
     return localStorage.getItem(API_KEY_STORAGE_KEY) || '';
+}
+
+function loadUserName() {
+    return localStorage.getItem(USER_NAME_STORAGE_KEY) || DEFAULT_USER_NAME;
+}
+
+function loadUserHandle() {
+    return localStorage.getItem(USER_HANDLE_STORAGE_KEY) || DEFAULT_USER_HANDLE;
+}
+
+function loadUserAvatar() {
+    return localStorage.getItem(USER_AVATAR_STORAGE_KEY) || DEFAULT_AVATAR_PLACEHOLDER;
 }
 
 window.openSettings = function () {
@@ -64,6 +83,21 @@ window.openSettings = function () {
     modal.classList.add('open');
     const input = document.getElementById('api-key-input');
     input.value = loadApiKey();
+
+    const nameInput = document.getElementById('user-name-input');
+    const handleInput = document.getElementById('user-handle-input');
+    const preview = document.getElementById('avatar-preview');
+    nameInput.value = localStorage.getItem(USER_NAME_STORAGE_KEY) || '';
+    handleInput.value = localStorage.getItem(USER_HANDLE_STORAGE_KEY) || '';
+
+    const avatarData = localStorage.getItem(USER_AVATAR_STORAGE_KEY);
+    if (avatarData) {
+        preview.src = avatarData;
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+        preview.src = '';
+    }
 };
 
 window.closeSettings = function () {
@@ -74,6 +108,24 @@ window.closeSettingsOnOverlay = function (e) {
     if (e.target === e.currentTarget) window.closeSettings();
 };
 
+window.handleAvatarUpload = function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        showToast('画像サイズは2MB以下にしてください', 'error');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const preview = document.getElementById('avatar-preview');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+};
+
 window.saveApiKeyFromModal = function () {
     const key = document.getElementById('api-key-input').value.trim();
     if (!key) {
@@ -81,8 +133,35 @@ window.saveApiKeyFromModal = function () {
         return;
     }
     localStorage.setItem(API_KEY_STORAGE_KEY, key);
+
+    // Save profile info
+    const name = document.getElementById('user-name-input').value.trim();
+    if (name) {
+        localStorage.setItem(USER_NAME_STORAGE_KEY, name);
+    } else {
+        localStorage.removeItem(USER_NAME_STORAGE_KEY);
+    }
+
+    const handle = document.getElementById('user-handle-input').value.trim();
+    if (handle) {
+        localStorage.setItem(USER_HANDLE_STORAGE_KEY, handle);
+    } else {
+        localStorage.removeItem(USER_HANDLE_STORAGE_KEY);
+    }
+
+    const previewSrc = document.getElementById('avatar-preview').src;
+    if (previewSrc && previewSrc.startsWith('data:')) {
+        localStorage.setItem(USER_AVATAR_STORAGE_KEY, previewSrc);
+    }
+
+    // Update existing drafts avatar in DOM
+    if (currentTalkId && talks.length > 0) {
+        const talk = talks.find(t => t.id === currentTalkId);
+        if (talk) renderDrafts(currentDrafts, talk.likedDrafts || []);
+    }
+
     window.closeSettings();
-    showToast('APIキーを保存しました', 'success');
+    showToast('設定を保存しました', 'success');
 };
 
 window.toggleKeyVisibility = function () {
@@ -552,16 +631,20 @@ function renderDrafts(drafts, likedDrafts = []) {
             modelBadgeHtml = `<span class="draft-model-badge" style="color: #00ba7c; background: rgba(0, 186, 124, 0.1);">🍃 2.5 Lite</span>`;
         }
 
+        const userName = loadUserName();
+        const userHandle = loadUserHandle();
+        const avatarUrl = loadUserAvatar();
+
         const card = document.createElement('div');
         card.className = 'draft-card';
         card.setAttribute('role', 'button');
         card.setAttribute('tabindex', '0');
         card.innerHTML = `
             <div class="draft-card-header">
-                <img class="draft-avatar" src="avatar.png" alt="avatar">
+                <img class="draft-avatar" src="${escapeHtml(avatarUrl)}" alt="avatar">
                 <div class="draft-user-info">
-                    <span class="draft-username">ハレ</span>
-                    <span class="draft-handle">@_hareq</span>
+                    <span class="draft-username">${escapeHtml(userName)}</span>
+                    <span class="draft-handle">${escapeHtml(userHandle)}</span>
                 </div>
                 <span class="draft-number">#${i + 1}</span>
                 ${modelBadgeHtml}
