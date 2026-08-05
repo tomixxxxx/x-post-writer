@@ -11,6 +11,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
         rel="stylesheet">
+    <link rel="icon" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
     <link rel="stylesheet" href="style.css">
     <!-- Gemini SDK via ESM (CDN) -->
     <script type="importmap">
@@ -132,7 +134,7 @@
                             <div class="select-trigger" onclick="toggleModelDropdown(event)">
                                 <span class="model-badge" id="selected-model-icon"
                                     style="color: #ffd400; background: rgba(255, 212, 0, 0.1);">⚡</span>
-                                <span class="model-name" id="selected-model-name">Gemini 3 Flash</span>
+                                <span class="model-name" id="selected-model-name">Gemini 3.6 Flash</span>
                                 <span class="select-arrow">▼</span>
                             </div>
                             <ul class="select-options" id="model-options">
@@ -145,38 +147,38 @@
                                         <span class="model-desc">複雑な推論特化</span>
                                     </div>
                                 </li>
-                                <li class="select-option selected" data-value="gemini-3-flash"
-                                    data-name="Gemini 3 Flash" data-icon="⚡" data-color="#ffd400"
+                                <li class="select-option selected" data-value="gemini-3.6-flash"
+                                    data-name="Gemini 3.6 Flash" data-icon="⚡" data-color="#ffd400"
                                     onclick="selectModelOption(this)">
                                     <span class="model-badge"
                                         style="color: #ffd400; background: rgba(255, 212, 0, 0.1);">⚡</span>
                                     <div class="model-info">
-                                        <span class="model-name">Gemini 3 Flash</span>
-                                        <span class="model-desc">爆速・低コストの次世代標準</span>
+                                        <span class="model-name">Gemini 3.6 Flash</span>
+                                        <span class="model-desc">最新の高速・高効率モデル</span>
                                     </div>
                                 </li>
-                                <li class="select-option" data-value="gemini-2.5-flash" data-name="Gemini 2.5 Flash"
+                                <li class="select-option" data-value="gemini-3.5-flash" data-name="Gemini 3.5 Flash"
                                     data-icon="🚀" data-color="#1d9bf0" onclick="selectModelOption(this)">
                                     <span class="model-badge"
                                         style="color: #1d9bf0; background: rgba(29, 155, 240, 0.1);">🚀</span>
                                     <div class="model-info">
-                                        <span class="model-name">Gemini 2.5 Flash</span>
-                                        <span class="model-desc">高速な現行標準モデル</span>
+                                        <span class="model-name">Gemini 3.5 Flash</span>
+                                        <span class="model-desc">高品質な文章生成・推論</span>
                                     </div>
                                 </li>
-                                <li class="select-option" data-value="gemini-2.5-flash-lite"
-                                    data-name="Gemini 2.5 Flash Lite" data-icon="🍃" data-color="#00ba7c"
+                                <li class="select-option" data-value="gemini-3.5-flash-lite"
+                                    data-name="Gemini 3.5 Flash-Lite" data-icon="🍃" data-color="#00ba7c"
                                     onclick="selectModelOption(this)">
                                     <span class="model-badge"
                                         style="color: #00ba7c; background: rgba(0, 186, 124, 0.1);">🍃</span>
                                     <div class="model-info">
-                                        <span class="model-name">Gemini 2.5 Flash Lite</span>
-                                        <span class="model-desc">軽量で安価なモデル</span>
+                                        <span class="model-name">Gemini 3.5 Flash-Lite</span>
+                                        <span class="model-desc">低遅延・低コストモデル</span>
                                     </div>
                                 </li>
                             </ul>
                             <!-- Hidden input matching old select id to minimize JS changes -->
-                            <input type="hidden" id="model-select" value="gemini-3-flash">
+                            <input type="hidden" id="model-select" value="gemini-3.6-flash">
                         </div>
                     </div>
 

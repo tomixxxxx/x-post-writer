@@ -10,6 +10,14 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const DEFAULT_MODEL = 'gemini-3.6-flash';
+
+const MODEL_API_NAMES = {
+    'gemini-3.1-pro': 'gemini-3.1-pro-preview',
+    'gemini-3.6-flash': 'gemini-3.6-flash',
+    'gemini-3.5-flash': 'gemini-3.5-flash',
+    'gemini-3.5-flash-lite': 'gemini-3.5-flash-lite',
+};
 
 // ── Middleware ──────────────────────────────────────────
 app.use(express.json());
@@ -28,11 +36,7 @@ function getModel(modelName) {
         if (!apiKey) throw new Error('GEMINI_API_KEY が .env に設定されていません');
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        let apiModelName = modelName;
-        // Map user-friendly names to actual API models
-        if (modelName === 'gemini-3.1-pro') apiModelName = 'gemini-3.1-pro-preview';
-        else if (modelName === 'gemini-3-flash') apiModelName = 'gemini-3-flash-preview';
-        else if (modelName === 'gemini-2.5-flash-lite') apiModelName = 'gemini-2.5-flash-lite';
+        const apiModelName = MODEL_API_NAMES[modelName] || modelName;
 
         modelsCache[modelName] = genAI.getGenerativeModel({ model: apiModelName });
     }
@@ -47,8 +51,7 @@ app.post('/api/generate', async (req, res) => {
             return res.status(400).json({ error: '出来事を入力してください' });
         }
 
-        // Default to gemini-2.5-flash if not provided
-        const selectedModel = model || 'gemini-3-flash';
+        const selectedModel = model || DEFAULT_MODEL;
 
         const prompt = `${personaPrompt}
 

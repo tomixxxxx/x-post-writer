@@ -8,6 +8,19 @@ let currentTalkId = null;
 let talks = [];
 let cachedPersonaPrompt = null;
 
+const DEFAULT_MODEL = 'gemini-3.6-flash';
+const MODEL_API_NAMES = {
+    'gemini-3.1-pro': 'gemini-3.1-pro-preview',
+    'gemini-3.6-flash': 'gemini-3.6-flash',
+    'gemini-3.5-flash': 'gemini-3.5-flash',
+    'gemini-3.5-flash-lite': 'gemini-3.5-flash-lite',
+};
+const LEGACY_MODEL_REPLACEMENTS = {
+    'gemini-3-flash': 'gemini-3.6-flash',
+    'gemini-2.5-flash': 'gemini-3.6-flash',
+    'gemini-2.5-flash-lite': 'gemini-3.5-flash-lite',
+};
+
 // ── DOM Elements ──────────────────────────────────────
 const eventInput = document.getElementById('event-input');
 const modelSelect = document.getElementById('model-select');
@@ -328,15 +341,25 @@ function hexToRgb(hex) {
 // ── Talk Management ───────────────────────────────────
 
 function loadTalks() {
+    let modelsWereMigrated = false;
     try {
         const saved = localStorage.getItem('xpostwriter_talks');
         if (saved) {
             talks = JSON.parse(saved);
+            talks.forEach(talk => {
+                const currentModel = talk.model;
+                const replacementModel = LEGACY_MODEL_REPLACEMENTS[currentModel] || currentModel || DEFAULT_MODEL;
+                if (replacementModel !== currentModel) {
+                    talk.model = replacementModel;
+                    modelsWereMigrated = true;
+                }
+            });
         }
     } catch (e) {
         console.error('Failed to load talks', e);
         talks = [];
     }
+    if (modelsWereMigrated) saveTalks();
     renderTalksList();
 
     // If there are talks but none is selected, show empty state
@@ -355,13 +378,11 @@ function saveTalks() {
 
 window.createNewTalk = function () {
     currentTalkId = 'talk_' + Date.now();
-    const defaultModel = 'gemini-3-flash';
-
     talks.unshift({
         id: currentTalkId,
         date: new Intl.DateTimeFormat('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date()),
         event: '',
-        model: defaultModel,
+        model: DEFAULT_MODEL,
         drafts: [],
         likedDrafts: []
     });
@@ -543,13 +564,7 @@ window.generateDrafts = async function () {
 
     try {
         // Map model ID to actual API endpoint
-        const MODEL_MAP = {
-            'gemini-3.1-pro': 'gemini-3.1-pro-preview',
-            'gemini-3-flash': 'gemini-3-flash-preview',
-            'gemini-2.5-flash': 'gemini-2.5-flash',
-            'gemini-2.5-flash-lite': 'gemini-2.5-flash-lite',
-        };
-        const apiModelName = MODEL_MAP[model] || model;
+        const apiModelName = MODEL_API_NAMES[model] || model;
 
         const personaPrompt = await getPersonaPrompt();
         const prompt = `${personaPrompt}
@@ -639,6 +654,12 @@ function renderDrafts(drafts, likedDrafts = []) {
             modelBadgeHtml = `<span class="draft-model-badge" style="color: #00ba7c; background: rgba(0, 186, 124, 0.1);">✍️ Edited</span>`;
         } else if (model === 'gemini-3.1-pro') {
             modelBadgeHtml = `<span class="draft-model-badge" style="color: #c840e9; background: rgba(200, 64, 233, 0.1);">🧠 3.1 Pro</span>`;
+        } else if (model === 'gemini-3.6-flash') {
+            modelBadgeHtml = `<span class="draft-model-badge" style="color: #ffd400; background: rgba(255, 212, 0, 0.1);">⚡ 3.6 Flash</span>`;
+        } else if (model === 'gemini-3.5-flash') {
+            modelBadgeHtml = `<span class="draft-model-badge" style="color: #1d9bf0; background: rgba(29, 155, 240, 0.1);">🚀 3.5 Flash</span>`;
+        } else if (model === 'gemini-3.5-flash-lite') {
+            modelBadgeHtml = `<span class="draft-model-badge" style="color: #00ba7c; background: rgba(0, 186, 124, 0.1);">🍃 3.5 Lite</span>`;
         } else if (model === 'gemini-3-flash') {
             modelBadgeHtml = `<span class="draft-model-badge" style="color: #ffd400; background: rgba(255, 212, 0, 0.1);">⚡ 3 Flash</span>`;
         } else if (model === 'gemini-2.5-flash') {
